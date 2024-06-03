@@ -31,10 +31,6 @@ class AuthController {
             console.log("response", isPasswordValid)
             
             if (!isPasswordValid) {
-                res.json({
-                    status: 'error',
-                    message: 'Senha incorreta',
-                });
                 return res.status(401).json({status: 401, error: 'Senha incorreta' });
             }
             if (!jwttoken) {
