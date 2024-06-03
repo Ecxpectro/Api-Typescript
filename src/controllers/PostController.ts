@@ -134,6 +134,22 @@ class PostController {
             return res.status(401).json({ status: 401, error: error });
         }
     }
+    async deletePost(req: Request, res: Response){
+        const id = req.params.id;
+        if (!id) {
+            return res.status(401).json({ status: 401, error: "Faltou o ID" });
+        }
+    
+        try {
+          const response = await PostService.deletePost(parseInt(id));
+          if (response) {
+            return res.status(200).json({ status: 200, message: "Post deletado com sucesso" });
+          }
+        } catch (error) {
+          console.log(error);
+          return res.status(401).json({ status: 401, error: error });
+        }
+    }
 }
 
 export default new PostController();

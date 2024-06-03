@@ -11,4 +11,6 @@ PostRouter.get("/api/post/getPostByUserId/:id", PostController.getPostbyUserId);
 
 PostRouter.patch("/api/post/update/:id", PostController.updatePost);
 
+PostRouter.delete("/api/post/delete/:id", PostController.deletePost);
+
 export default PostRouter;

@@ -11,58 +11,76 @@ class PostService {
                 data: post
             });
             return newpost;
-            
+
         } catch (error) {
             console.log(error);
             return null;
         }
     }
 
-    async updatePost(post: Prisma.PostUpdateInput, id: number){
+    async updatePost(post: Prisma.PostUpdateInput, id: number) {
         try {
             const updatedPost = await prisma.post.update({
-              data: post,
-              where: {
-                id: id,
-              },
+                data: post,
+                where: {
+                    id: id,
+                },
             });
             return updatedPost;
-          } catch (error) {
+        } catch (error) {
             console.log(error);
             return null;
-          }
+        }
     }
 
-    async getPosts(){
+    async getPosts() {
         try {
             const posts = await prisma.post.findMany({
-                include:{
+                include: {
                     author: true,
                     comments: true
                 }
             });
             console.log("posts: ", posts);
             return posts;
-            
+
         } catch (error) {
             console.log(error);
             return null;
         }
     }
 
-    async getPostsByUserId(id: number){
+    async getPostsByUserId(id: number) {
         try {
             const userPosts = await prisma.post.findMany({
-                include:{
-                    author:true,
-                    comments:true
+                include: {
+                    author: true,
+                    comments: true
                 },
-                where:{
-                    author:{id: id}
+                where: {
+                    author: { id: id }
                 }
             });
 
             return userPosts;
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    }
+    async deletePost(id: number) {
+        try {
+            await prisma.comment.deleteMany({
+                where: {
+                    postId: id,
+                },
+            });
+            await prisma.post.delete({
+                where: {
+                    id: id,
+                },
+            });
+            return true;
         } catch (error) {
             console.log(error);
             return null;
