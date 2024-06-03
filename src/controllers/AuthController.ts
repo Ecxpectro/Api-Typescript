@@ -1,55 +1,54 @@
+import jwt from 'jsonwebtoken';
 import { Request, Response } from "express";
 import AuthService from "../services/AuthService";
-import { generateHash } from "../utils/BcryptUtils";
-
+import { validateHash } from "../utils/BcryptUtils";
+require('dotenv').config();
+const jwttoken = process.env.jwt_Token_Validation;
 
 class AuthController {
     constructor() { }
 
-    async signUp(req: Request, res: Response) {
+    async signIn(req: Request, res: Response) {
         const body = req.body;
-        console.log(body);
-
-        if (!body.email || !body.name || !body.password) {
-            res.json({
-                status: "error",
-                message: "Falta parâmetros",
-            });
-            return;
-        }
-
-        const hashPassword = await generateHash(body.password);
-
-        if (!hashPassword) {
-            res.json({
-                status: "error",
-                message: "Erro ao criptografar senha ...",
-            });
+        console.log(body)
+        if (!body.email || !body.password) {
+            return res.status(401).json({status: 401, error: 'Falta parâmetros' });
         }
 
         try {
-            const newuser = await AuthService.signUp({
-                name: body.name,
+            const user = await AuthService.signIn({
                 email: body.email,
-                password: hashPassword as string
+                name: body.name,
             });
-            res.json({
-                status: "ok",
-                newuser: newuser,
+            console.log(user)
+
+            if (!user) {
+                return res.status(401).json({status: 401, error: 'Usuário não encontrado' });
+            }
+
+            const isPasswordValid = await validateHash(body.password, user.password);
+           
+            console.log("response", isPasswordValid)
+            
+            if (!isPasswordValid) {
+                res.json({
+                    status: 'error',
+                    message: 'Senha incorreta',
+                });
+                return res.status(401).json({status: 401, error: 'Senha incorreta' });
+            }
+            if (!jwttoken) {
+                return res.status(500).json({status: 500, error: 'Chave secreta não definida' });
+            }
+            const token = jwt.sign({ userId: user.id }, jwttoken, {
+                expiresIn: '1h',
             });
+
+            return res.json({ status:200, accessToken: token });
         } catch (error) {
-            res.json({
-                status: "error",
-                message: error,
-            });
+            return res.status(401).json({status: 401, error: error });
         }
     }
 
-    async signIn() {
-
-    }
-
-    async signOut() {
-
-    }
 }
+export default new AuthController();

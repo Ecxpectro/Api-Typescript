@@ -7,22 +7,24 @@ class AuthService {
 
     }
 
-    async signIn() {
-
-    }
-
-    async signUp(user: Prisma.UserCreateInput) {
+    async signIn(userLogin: Prisma.UserWhereInput) {
         try {
-            const newuser = await prisma.user.create({
-                data: user,
+            const user = await prisma.user.findFirst({
+                where: {
+                    OR:[
+                        {name: userLogin.name},
+                        {email: userLogin.email}
+                      ]
+                }
             });
-            return newuser;
+            
+            return user;
+
         } catch (error) {
             console.log(error);
             return null;
         }
     }
-
     async signOut() {
 
     }

@@ -1,67 +1,56 @@
 import { Request, Response } from "express";
 import PostService from "../services/PostService";
-import UserDataBaseService from '../services/UserDataBaseService';
-import { validateHash } from "../utils/BcryptUtils";
+import jwt, { JwtPayload } from 'jsonwebtoken'; //
+require('dotenv').config();
+const jwttoken = process.env.jwt_Token_Validation;
+
+interface DecodedToken extends JwtPayload {
+    userId: string;
+}
 
 class PostController {
     constructor() { }
 
     async insertPost(req: Request, res: Response) {
         const body = req.body;
-        console.log(body);
 
-        if (!(body.user.email || body.user.name)
-            || !body.user.password
-            || !body.post.title
-            || !body.post.content) {
-            res.json({
-                status: "error",
-                message: "Falta parâmetros",
-            });
-            return;
+        if (!body.post.title || !body.post.content) {
+           return res.status(401).json({status: 401, error: 'Falta parâmetros' });
         }
+
         try {
-            //Verifica se o usuário existe no banco
-            const user = await UserDataBaseService.getUserByNameOrEmail(body.user.name, body.user.email);
-            console.log(user)
+            const token = req.headers.authorization?.split(' ')[1];
 
-            if (!user) {
-                res.json({
-                    status: 'error',
-                    message: 'Usuário não encontrado',
-                });
-                return;
-            }
-            //Verifica se a senha é a mesma
-            const isPasswordValid = await validateHash(body.user.password, user.password);
-
-            if (!isPasswordValid) {
-                res.json({
-                    status: 'error',
-                    message: 'Senha incorreta',
-                });
-                return;
+            if (!token) {
+                return res.status(401).json({status: 401, error: 'Token não fornecido' });
             }
 
-            const newPost = await PostService.insertPost({
-                title: body.post.title,
-                content: body.post.content,
-                author: {
-                    connect: { id: user.id },
-                },
-                published: false,
-            });
-            
-            res.json({
-                status: "ok",
-                newuser: newPost,
-            });
+            if (!jwttoken) {
+                return res.status(500).json({status: 500, error: 'Chave secreta não definida' });
+            }
 
+            jwt.verify(token, jwttoken, async (err, decodedToken) => {
+                if (err) {
+                    return res.status(401).json({ status: 401, error: 'Token inválido' });
+                }
+
+                const decoded = decodedToken as DecodedToken;
+
+                const userId = parseInt(decoded.userId, 10);
+
+                const newPost = await PostService.insertPost({
+                    title: body.post.title,
+                    content: body.post.content,
+                    author: {
+                        connect: { id: userId },
+                    },
+                    published: false,
+                });
+
+                return res.status(200).json({ status: 200, newPost: newPost });
+            });
         } catch (error) {
-            res.json({
-                status: "error",
-                message: error,
-            });
+            return res.status(401).json({ status: 401, error: error });
         }
     }
 }
