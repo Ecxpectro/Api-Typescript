@@ -5,6 +5,8 @@ const PostRouter = Router();
 
 PostRouter.post("/api/post/create", PostController.insertPost);
 
-PostRouter.get("/api/post/getbyuser");
+PostRouter.post("/api/post/getallpost", PostController.getAllPost);
+
+PostRouter.get("/api/post/getPostByUserId/:id", PostController.getPostbyUserId);
 
 export default PostRouter;
