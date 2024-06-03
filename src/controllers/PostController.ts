@@ -15,18 +15,18 @@ class PostController {
         const body = req.body;
 
         if (!body.post.title || !body.post.content) {
-           return res.status(401).json({status: 401, error: 'Falta parâmetros' });
+            return res.status(401).json({ status: 401, error: 'Falta parâmetros' });
         }
 
         try {
             const token = req.headers.authorization?.split(' ')[1];
 
             if (!token) {
-                return res.status(401).json({status: 401, error: 'Token não fornecido' });
+                return res.status(401).json({ status: 401, error: 'Token não fornecido' });
             }
 
             if (!jwttoken) {
-                return res.status(500).json({status: 500, error: 'Chave secreta não definida' });
+                return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
             }
 
             jwt.verify(token, jwttoken, async (err, decodedToken) => {
@@ -53,17 +53,17 @@ class PostController {
             return res.status(401).json({ status: 401, error: error });
         }
     }
-    async getAllPost(req: Request, res: Response){
+    async getAllPost(req: Request, res: Response) {
 
         try {
             const token = req.headers.authorization?.split(' ')[1];
 
             if (!token) {
-                return res.status(401).json({status: 401, error: 'Token não fornecido' });
+                return res.status(401).json({ status: 401, error: 'Token não fornecido' });
             }
 
             if (!jwttoken) {
-                return res.status(500).json({status: 500, error: 'Chave secreta não definida' });
+                return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
             }
 
             jwt.verify(token, jwttoken, async (err, decodedToken) => {
@@ -80,18 +80,18 @@ class PostController {
         }
     }
 
-    async getPostbyUserId(req: Request, res: Response){
+    async getPostbyUserId(req: Request, res: Response) {
         const id = req.params.id;
         console.log(id)
         try {
             const token = req.headers.authorization?.split(' ')[1];
 
             if (!token) {
-                return res.status(401).json({status: 401, error: 'Token não fornecido' });
+                return res.status(401).json({ status: 401, error: 'Token não fornecido' });
             }
 
             if (!jwttoken) {
-                return res.status(500).json({status: 500, error: 'Chave secreta não definida' });
+                return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
             }
 
             jwt.verify(token, jwttoken, async (err, decodedToken) => {
@@ -104,6 +104,33 @@ class PostController {
                 return res.status(200).json({ status: 200, posts: posts });
             });
         } catch (error) {
+            return res.status(401).json({ status: 401, error: error });
+        }
+    }
+    async updatePost(req: Request, res: Response) {
+        const id = req.params.id;
+        if (!id) {
+            return res.status(401).json({ status: 401, error: "Faltou o ID" });
+        }
+
+        const body = req.body;
+        console.log(body)
+        if (!body.content || !body.title) {
+            return res.status(401).json({ status: 401, error: "Falta parâmetros" });
+        }
+
+        try {
+            const updatedUser = await PostService.updatePost(
+                {
+                    content: body.content,
+                    title: body.title,
+                },
+                parseInt(id)
+            );
+            console.log(updatedUser)
+            return res.status(200).json({ status: 200, updatedUser: updatedUser });
+        }
+         catch (error) {
             return res.status(401).json({ status: 401, error: error });
         }
     }

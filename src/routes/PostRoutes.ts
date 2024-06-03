@@ -9,4 +9,6 @@ PostRouter.post("/api/post/getallpost", PostController.getAllPost);
 
 PostRouter.get("/api/post/getPostByUserId/:id", PostController.getPostbyUserId);
 
+PostRouter.patch("/api/post/update/:id", PostController.updatePost);
+
 export default PostRouter;

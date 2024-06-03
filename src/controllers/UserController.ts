@@ -3,7 +3,7 @@ import UserDataBaseService from "../services/UserDataBaseService";
 import { generateHash } from "../utils/BcryptUtils";
 
 class UserController {
-  constructor() {}
+  constructor() { }
 
   async listUsers(req: Request, res: Response) {
     try {
@@ -35,7 +35,7 @@ class UserController {
 
     const hashPassword = await generateHash(body.password);
 
-    if(!hashPassword){
+    if (!hashPassword) {
       res.json({
         status: "error",
         message: "Erro ao criptografar senha ...",

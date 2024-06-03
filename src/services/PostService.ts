@@ -18,6 +18,21 @@ class PostService {
         }
     }
 
+    async updatePost(post: Prisma.PostUpdateInput, id: number){
+        try {
+            const updatedPost = await prisma.post.update({
+              data: post,
+              where: {
+                id: id,
+              },
+            });
+            return updatedPost;
+          } catch (error) {
+            console.log(error);
+            return null;
+          }
+    }
+
     async getPosts(){
         try {
             const posts = await prisma.post.findMany({
