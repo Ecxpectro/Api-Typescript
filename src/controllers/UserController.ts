@@ -1,23 +1,39 @@
 import { Request, Response } from "express";
 import UserDataBaseService from "../services/UserDataBaseService";
 import { generateHash } from "../utils/BcryptUtils";
+import jwt, { JwtPayload } from 'jsonwebtoken';
+require('dotenv').config();
+const jwttoken = process.env.jwt_Token_Validation;
 
+interface DecodedToken extends JwtPayload {
+  userId: string;
+}
 class UserController {
   constructor() { }
 
   async listUsers(req: Request, res: Response) {
     try {
-      const users = await UserDataBaseService.listDBUsers();
-      res.json({
-        status: "ok",
-        users: users,
+      const token = req.headers.authorization?.split(' ')[1];
+
+      if (!token) {
+        return res.status(401).json({ status: 401, error: 'Token não fornecido' });
+      }
+
+      if (!jwttoken) {
+        return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
+      }
+
+      jwt.verify(token, jwttoken, async (err, decodedToken) => {
+        if (err) {
+          return res.status(401).json({ status: 401, error: 'Token inválido' });
+        }
+
+        const users = await UserDataBaseService.listDBUsers();
+        return res.status(200).json({ status: 200, users: users });
       });
     } catch (error) {
       console.log(error);
-      res.json({
-        status: "error",
-        message: error,
-      });
+      return res.status(401).json({ status: 401, error: error });
     }
   }
 
@@ -25,20 +41,13 @@ class UserController {
     const body = req.body;
 
     if (!body.email || !body.name || !body.password) {
-      res.json({
-        status: "error",
-        message: "Falta parâmetros",
-      });
-      return;
+      return res.status(401).json({ status: 401, error: 'Falta parâmetros' });
     }
 
     const hashPassword = await generateHash(body.password);
 
     if (!hashPassword) {
-      res.json({
-        status: "error",
-        message: "Erro ao criptografar senha ...",
-      });
+      return res.status(401).json({ status: 401, error: 'Erro ao criptografar senha ...' });
     }
 
     try {
@@ -47,78 +56,84 @@ class UserController {
         email: body.email,
         password: hashPassword as string
       });
-      res.json({
-        status: "ok",
-        newuser: newuser,
-      });
+      return res.status(200).json({ status: 200, newuser: newuser });
+
     } catch (error) {
-      res.json({
-        status: "error",
-        message: error,
-      });
+      return res.status(401).json({ status: 401, error: error });
     }
   }
 
   async updateUser(req: Request, res: Response) {
     const id = req.params.id;
     if (!id) {
-      res.json({
-        status: "error",
-        message: "Faltou o ID",
-      });
+      return res.status(401).json({ status: 401, error: 'Faltou o ID' });
     }
 
     const { name, email } = req.body;
+    console.log(req.body)
     if (!email || !name) {
-      res.json({
-        status: "error",
-        message: "Falta parâmetros",
-      });
+      return res.status(401).json({ status: 401, error: 'Falta parâmetros' });
     }
 
     try {
-      const updatedUser = await UserDataBaseService.updateDBUser(
-        {
-          name: name,
-          email: email,
-        },
-        parseInt(id)
-      );
-      res.json({
-        status: "ok",
-        newuser: updatedUser,
+      const token = req.headers.authorization?.split(' ')[1];
+
+      if (!token) {
+        return res.status(401).json({ status: 401, error: 'Token não fornecido' });
+      }
+
+      if (!jwttoken) {
+        return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
+      }
+
+      jwt.verify(token, jwttoken, async (err, decodedToken) => {
+        if (err) {
+          return res.status(401).json({ status: 401, error: 'Token inválido' });
+        }
+        const updatedUser = await UserDataBaseService.updateDBUser(
+          {
+            name: name,
+            email: email,
+          },
+          parseInt(id)
+        );
+        return res.status(200).json({ status: 200, updatedUser: updatedUser });
       });
     } catch (error) {
-      res.json({
-        status: "error",
-        message: error,
-      });
+      return res.status(401).json({ status: 401, error: error });
     }
   }
 
   async deleteUser(req: Request, res: Response) {
     const id = req.params.id;
     if (!id) {
-      res.json({
-        status: "error",
-        message: "Faltou o ID",
-      });
+      return res.status(401).json({ status: 401, error: 'Faltou o ID' });
     }
 
     try {
-      const response = await UserDataBaseService.deleteDBUser(parseInt(id));
-      if (response) {
-        res.json({
-          status: "ok",
-          message: "usuário deletado com sucesso",
-        });
+      const token = req.headers.authorization?.split(' ')[1];
+
+      if (!token) {
+        return res.status(401).json({ status: 401, error: 'Token não fornecido' });
       }
+
+      if (!jwttoken) {
+        return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
+      }
+
+      jwt.verify(token, jwttoken, async (err, decodedToken) => {
+        if (err) {
+          return res.status(401).json({ status: 401, error: 'Token inválido' });
+        }
+        const response = await UserDataBaseService.deleteDBUser(parseInt(id));
+        if (response) {
+          return res.status(200).json({ status: 200, message: "Usuário deletado com sucesso" });
+        }
+
+      });
     } catch (error) {
       console.log(error);
-      res.json({
-        status: "error",
-        message: error,
-      });
+      return res.status(401).json({ status: 401, error: error });
     }
   }
 }

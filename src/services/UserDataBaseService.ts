@@ -3,7 +3,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 class UserDataBaseService {
-  constructor() {}
+  constructor() { }
 
   async listDBUsers() {
     try {
@@ -49,6 +49,16 @@ class UserDataBaseService {
 
   async deleteDBUser(id: number) {
     try {
+      await prisma.comment.deleteMany({
+        where: {
+          authorId: id,
+        },
+      });
+      await prisma.post.deleteMany({
+        where: {
+          authorId: id,
+        },
+      });
       await prisma.user.delete({
         where: {
           id: id,

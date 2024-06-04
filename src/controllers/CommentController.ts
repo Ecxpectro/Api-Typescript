@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import CommentService from "../services/CommentService";
-import jwt, { JwtPayload } from 'jsonwebtoken'; 
+import jwt, { JwtPayload } from 'jsonwebtoken';
 require('dotenv').config();
 const jwttoken = process.env.jwt_Token_Validation;
 
@@ -13,7 +13,7 @@ class CommentController {
 
     async insertComment(req: Request, res: Response) {
         const body = req.body;
-console.log(body)
+        console.log(body)
         if (!body.content || !body.postId) {
             return res.status(401).json({ status: 401, error: 'Falta parâmetros' });
         }
@@ -43,8 +43,8 @@ console.log(body)
                     author: {
                         connect: { id: userId },
                     },
-                    post:{
-                        connect:{id: body.postId}
+                    post: {
+                        connect: { id: body.postId }
                     }
                 });
 
@@ -114,7 +114,7 @@ console.log(body)
         }
 
         const body = req.body;
-  
+
         if (!body.content) {
             return res.status(401).json({ status: 401, error: "Falta parâmetros" });
         }
@@ -128,24 +128,24 @@ console.log(body)
             );
             return res.status(200).json({ status: 200, updatedUser: updatedComment });
         }
-         catch (error) {
+        catch (error) {
             return res.status(401).json({ status: 401, error: error });
         }
     }
-    async deleteComment(req: Request, res: Response){
+    async deleteComment(req: Request, res: Response) {
         const id = req.params.id;
         if (!id) {
             return res.status(401).json({ status: 401, error: "Faltou o ID" });
         }
-    
+
         try {
-          const response = await CommentService.deleteComment(parseInt(id));
-          if (response) {
-            return res.status(200).json({ status: 200, message: "Comentário deletado com sucesso" });
-          }
+            const response = await CommentService.deleteComment(parseInt(id));
+            if (response) {
+                return res.status(200).json({ status: 200, message: "Comentário deletado com sucesso" });
+            }
         } catch (error) {
-          console.log(error);
-          return res.status(401).json({ status: 401, error: error });
+            console.log(error);
+            return res.status(401).json({ status: 401, error: error });
         }
     }
 }
