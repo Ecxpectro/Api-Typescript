@@ -10,7 +10,7 @@ class AuthController {
 
     async signIn(req: Request, res: Response) {
         const body = req.body;
-        console.log(body)
+
         if (!body.email || !body.password) {
             return res.status(401).json({status: 401, error: 'Falta parâmetros' });
         }
@@ -20,15 +20,12 @@ class AuthController {
                 email: body.email,
                 name: body.name,
             });
-            console.log(user)
 
             if (!user) {
                 return res.status(401).json({status: 401, error: 'Usuário não encontrado' });
             }
 
             const isPasswordValid = await validateHash(body.password, user.password);
-           
-            console.log("response", isPasswordValid)
             
             if (!isPasswordValid) {
                 return res.status(401).json({status: 401, error: 'Senha incorreta' });

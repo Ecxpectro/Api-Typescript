@@ -23,7 +23,6 @@ class UserController {
 
   async createUser(req: Request, res: Response) {
     const body = req.body;
-    console.log(body);
 
     if (!body.email || !body.name || !body.password) {
       res.json({

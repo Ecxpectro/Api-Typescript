@@ -2,15 +2,15 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-class PostService {
+class CommentService {
     constructor() { }
 
-    async insertPost(post: Prisma.PostCreateInput) {
+    async insertComment(comment: Prisma.CommentCreateInput) {
         try {
-            const newpost = await prisma.post.create({
-                data: post
+            const newComment = await prisma.comment.create({
+                data: comment
             });
-            return newpost;
+            return newComment;
 
         } catch (error) {
             console.log(error);
@@ -18,30 +18,31 @@ class PostService {
         }
     }
 
-    async updatePost(post: Prisma.PostUpdateInput, id: number) {
+    async updateComment(comment: Prisma.CommentUpdateInput, id: number) {
         try {
-            const updatedPost = await prisma.post.update({
-                data: post,
+            const updatedComment = await prisma.comment.update({
+                data: comment,
                 where: {
                     id: id,
                 },
             });
-            return updatedPost;
+            return updatedComment;
         } catch (error) {
             console.log(error);
             return null;
         }
     }
 
-    async getPosts() {
+    async getComments() {
         try {
-            const posts = await prisma.post.findMany({
+            const comments = await prisma.comment.findMany({
                 include: {
                     author: true,
-                    comments: true
+                    post: true
                 }
             });
-            return posts;
+
+            return comments;
 
         } catch (error) {
             console.log(error);
@@ -49,32 +50,27 @@ class PostService {
         }
     }
 
-    async getPostsByUserId(id: number) {
+    async getCommentsByUserId(id: number) {
         try {
-            const userPosts = await prisma.post.findMany({
+            const userComments = await prisma.comment.findMany({
                 include: {
                     author: true,
-                    comments: true
+                    post: true
                 },
                 where: {
                     author: { id: id }
                 }
             });
 
-            return userPosts;
+            return userComments;
         } catch (error) {
             console.log(error);
             return null;
         }
     }
-    async deletePost(id: number) {
+    async deleteComment(id: number) {
         try {
-            await prisma.comment.deleteMany({
-                where: {
-                    postId: id,
-                },
-            });
-            await prisma.post.delete({
+            await prisma.comment.delete({
                 where: {
                     id: id,
                 },
@@ -86,4 +82,4 @@ class PostService {
         }
     }
 }
-export default new PostService();
+export default new CommentService();

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import PostService from "../services/PostService";
+import CommentService from "../services/CommentService";
 import jwt, { JwtPayload } from 'jsonwebtoken'; 
 require('dotenv').config();
 const jwttoken = process.env.jwt_Token_Validation;
@@ -8,13 +8,13 @@ interface DecodedToken extends JwtPayload {
     userId: string;
 }
 
-class PostController {
+class CommentController {
     constructor() { }
 
-    async insertPost(req: Request, res: Response) {
+    async insertComment(req: Request, res: Response) {
         const body = req.body;
-
-        if (!body.post.title || !body.post.content) {
+console.log(body)
+        if (!body.content || !body.postId) {
             return res.status(401).json({ status: 401, error: 'Falta parâmetros' });
         }
 
@@ -38,22 +38,23 @@ class PostController {
 
                 const userId = parseInt(decoded.userId, 10);
 
-                const newPost = await PostService.insertPost({
-                    title: body.post.title,
-                    content: body.post.content,
+                const newComment = await CommentService.insertComment({
+                    content: body.content,
                     author: {
                         connect: { id: userId },
                     },
-                    published: false,
+                    post:{
+                        connect:{id: body.postId}
+                    }
                 });
 
-                return res.status(200).json({ status: 200, newPost: newPost });
+                return res.status(200).json({ status: 200, newComment: newComment });
             });
         } catch (error) {
             return res.status(401).json({ status: 401, error: error });
         }
     }
-    async getAllPost(req: Request, res: Response) {
+    async getAllComment(req: Request, res: Response) {
 
         try {
             const token = req.headers.authorization?.split(' ')[1];
@@ -71,16 +72,16 @@ class PostController {
                     return res.status(401).json({ status: 401, error: 'Token inválido' });
                 }
 
-                const posts = await PostService.getPosts();
+                const comments = await CommentService.getComments();
 
-                return res.status(200).json({ status: 200, posts: posts });
+                return res.status(200).json({ status: 200, comments: comments });
             });
         } catch (error) {
             return res.status(401).json({ status: 401, error: error });
         }
     }
 
-    async getPostbyUserId(req: Request, res: Response) {
+    async getCommentbyUserId(req: Request, res: Response) {
         const id = req.params.id;
         try {
             const token = req.headers.authorization?.split(' ')[1];
@@ -98,51 +99,49 @@ class PostController {
                     return res.status(401).json({ status: 401, error: 'Token inválido' });
                 }
 
-                const posts = await PostService.getPostsByUserId(parseInt(id));
+                const comments = await CommentService.getCommentsByUserId(parseInt(id));
 
-                return res.status(200).json({ status: 200, posts: posts });
+                return res.status(200).json({ status: 200, comments: comments });
             });
         } catch (error) {
             return res.status(401).json({ status: 401, error: error });
         }
     }
-    async updatePost(req: Request, res: Response) {
+    async updateComment(req: Request, res: Response) {
         const id = req.params.id;
         if (!id) {
             return res.status(401).json({ status: 401, error: "Faltou o ID" });
         }
 
         const body = req.body;
-
-        if (!body.content || !body.title) {
+  
+        if (!body.content) {
             return res.status(401).json({ status: 401, error: "Falta parâmetros" });
         }
 
         try {
-            const updatedPost = await PostService.updatePost(
+            const updatedComment = await CommentService.updateComment(
                 {
-                    content: body.content,
-                    title: body.title,
+                    content: body.content
                 },
                 parseInt(id)
             );
-
-            return res.status(200).json({ status: 200, updatedPost: updatedPost });
+            return res.status(200).json({ status: 200, updatedUser: updatedComment });
         }
          catch (error) {
             return res.status(401).json({ status: 401, error: error });
         }
     }
-    async deletePost(req: Request, res: Response){
+    async deleteComment(req: Request, res: Response){
         const id = req.params.id;
         if (!id) {
             return res.status(401).json({ status: 401, error: "Faltou o ID" });
         }
     
         try {
-          const response = await PostService.deletePost(parseInt(id));
+          const response = await CommentService.deleteComment(parseInt(id));
           if (response) {
-            return res.status(200).json({ status: 200, message: "Post deletado com sucesso" });
+            return res.status(200).json({ status: 200, message: "Comentário deletado com sucesso" });
           }
         } catch (error) {
           console.log(error);
@@ -151,4 +150,4 @@ class PostController {
     }
 }
 
-export default new PostController();
+export default new CommentController();
