@@ -1,7 +1,9 @@
 # Api-Typescript
 
 ##Documentação: 
-
+### Criar um arquivo .env
+* Adicionar a variável DATABASE_URL="file:./dev.db" para conexão no banco
+* Adicionar a variável jwt_Token_Validation="{NomeQueQuiser}" para validação do token
 ### Comandos Para Rodar Local
 * npm install
 * npx prisma generate
@@ -11,6 +13,8 @@
 * npm install
 * npx prisma generate
 * docker-compose up --build
+
+
 
   ![image](https://github.com/Ecxpectro/Api-Typescript/assets/93262391/07dd0dcf-f154-422e-83d7-b0971f2a8ab1)
 
