@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import PostService from "../services/PostService";
-import jwt, { JwtPayload } from 'jsonwebtoken'; 
+import jwt, { JwtPayload } from 'jsonwebtoken';
 require('dotenv').config();
 const jwttoken = process.env.jwt_Token_Validation;
 
@@ -119,34 +119,64 @@ class PostController {
         }
 
         try {
-            const updatedPost = await PostService.updatePost(
-                {
-                    content: body.content,
-                    title: body.title,
-                },
-                parseInt(id)
-            );
+            const token = req.headers.authorization?.split(' ')[1];
 
-            return res.status(200).json({ status: 200, updatedPost: updatedPost });
+            if (!token) {
+                return res.status(401).json({ status: 401, error: 'Token não fornecido' });
+            }
+
+            if (!jwttoken) {
+                return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
+            }
+
+            jwt.verify(token, jwttoken, async (err, decodedToken) => {
+                if (err) {
+                    return res.status(401).json({ status: 401, error: 'Token inválido' });
+                }
+                const updatedPost = await PostService.updatePost(
+                    {
+                        content: body.content,
+                        title: body.title,
+                    },
+                    parseInt(id)
+                );
+
+                return res.status(200).json({ status: 200, updatedPost: updatedPost });
+            });
         }
-         catch (error) {
+        catch (error) {
             return res.status(401).json({ status: 401, error: error });
         }
     }
-    async deletePost(req: Request, res: Response){
+    async deletePost(req: Request, res: Response) {
         const id = req.params.id;
         if (!id) {
             return res.status(401).json({ status: 401, error: "Faltou o ID" });
         }
-    
+
         try {
-          const response = await PostService.deletePost(parseInt(id));
-          if (response) {
-            return res.status(200).json({ status: 200, message: "Post deletado com sucesso" });
-          }
+            const token = req.headers.authorization?.split(' ')[1];
+
+            if (!token) {
+                return res.status(401).json({ status: 401, error: 'Token não fornecido' });
+            }
+
+            if (!jwttoken) {
+                return res.status(500).json({ status: 500, error: 'Chave secreta não definida' });
+            }
+
+            jwt.verify(token, jwttoken, async (err, decodedToken) => {
+                if (err) {
+                    return res.status(401).json({ status: 401, error: 'Token inválido' });
+                }
+                const response = await PostService.deletePost(parseInt(id));
+                if (response) {
+                    return res.status(200).json({ status: 200, message: "Post deletado com sucesso" });
+                }
+            });
         } catch (error) {
-          console.log(error);
-          return res.status(401).json({ status: 401, error: error });
+            console.log(error);
+            return res.status(401).json({ status: 401, error: error });
         }
     }
 }
