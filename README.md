@@ -10,7 +10,10 @@
 ### Comandos Para Rodar No Docker
 * npm install
 * npx prisma generate
-* docker-compose up --build 
+* docker-compose up --build
+
+  ![image](https://github.com/Ecxpectro/Api-Typescript/assets/93262391/07dd0dcf-f154-422e-83d7-b0971f2a8ab1)
+
 
 ###Métodos de usuário
 
